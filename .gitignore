@@ -1,0 +1,8 @@
+*
+!api/
+!api/*
+!api/**/*
+!package.json
+!package-lock.json
+!.gitignore
+!index.js
