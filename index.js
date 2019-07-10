@@ -5,10 +5,14 @@ var io = require('socket.io').listen(server);
 var cors = require('cors');
 var mongoose = require('mongoose');
 var bodyParser = require('body-parser');
+var morgan = require('morgan');
 var Messages = require('./api/models/message-model');
+var User = require('./api/models/user-model');
+var bcrypt = require('bcryptjs');
 
 app.use(cors());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(morgan('combined'))
 
 mongoose.Promise = global.Promise;
 mongoose.connect('mongodb://localhost:27017/chat', {useNewUrlParser: true});
@@ -31,6 +35,22 @@ app.get('/messages', (req, res) =>{
     }
   })
 })
+
+app.use('/register', (req, res) => {
+  let user = new User(req.body);
+  bcrypt.genSalt(10, (err, salt) => {
+    bcrypt.hash(user.password, salt, (err, hash) => {
+      if(err){
+        throw err;
+      }
+      user.password = hash;
+      user.save()
+      .then(user => res.redirect('/'))
+      .catch((err) => res.send(err.message))
+    })
+  });
+});
+
 
 var users = [];
 var connections = [];
