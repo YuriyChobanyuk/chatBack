@@ -38,17 +38,28 @@ app.get('/messages', (req, res) =>{
 
 app.use('/register', (req, res) => {
   let user = new User(req.body);
-  bcrypt.genSalt(10, (err, salt) => {
-    bcrypt.hash(user.password, salt, (err, hash) => {
-      if(err){
-        throw err;
-      }
-      user.password = hash;
-      user.save()
-      .then(user => res.redirect('/'))
-      .catch((err) => res.send(err.message))
-    })
-  });
+  User.find({username: user.username}, (err, doc) => {
+    if(err){
+      var error = Object.assign({}, err);
+      res.send(error);
+    } else {
+      doc.length ? res.send('user already exists') : addUser(user);
+    }
+
+  })
+  function addUser(user){
+    bcrypt.genSalt(10, (err, salt) => {
+      bcrypt.hash(user.password, salt, (err, hash) => {
+        if(err){
+          throw err;
+        }
+        user.password = hash;
+        user.save()
+        .then(user => res.redirect('/'))
+        .catch((err) => res.send(err.message))
+      })
+    });
+  }
 });
 
 
